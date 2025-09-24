@@ -1,50 +1,47 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <title>QR Şifre Çözücü</title>
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-        #reader { width: 300px; margin: 0 auto; }
-        #result { margin-top: 20px; font-size: 1.5em; color: green; }
-    </style>
+<meta charset="UTF-8">
+<title>QR ile Şifreleme</title>
+<script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body>
-    <h1>QR Şifre Çözücü</h1>
-    <div id="reader"></div>
-    <div id="result">QR Kod Bekleniyor...</div>
+<h1>QR Kod ile Şifreleme</h1>
 
-    <script>
-        // Şifre çözme fonksiyonu (senin algoritman)
-        function sifreCoz(sifreli) {
-            let islemler = [-8, 7, -5, 3, -2, 5]; // sırasıyla uygulanan işlemler
-            let sonuc = "";
-            for (let i = 0; i < sifreli.length; i++) {
-                let rakam = parseInt(sifreli[i]);
-                if (isNaN(rakam)) continue;
+<div id="reader" style="width:300px;"></div>
+<p>Şifreli Kod: <span id="sifreliKod">Bekleniyor...</span></p>
 
-                let deger = rakam - islemler[i % islemler.length]; // ters işlem
-                if (deger < 0) deger = Math.abs(deger); // negatifse pozitif yap
-                sonuc += deger % 10; // sadece tek haneli rakam
-            }
-            return sonuc;
-        }
+<script>
+// Şifreleme algoritması
+const islemler = [-8, 7, -5, 3, -2, 5];
 
-        function onScanSuccess(decodedText, decodedResult) {
-            // QR koddan gelen şifreyi çöz
-            let cozulmus = sifreCoz(decodedText);
-            document.getElementById("result").innerText = "Orijinal Kod: " + cozulmus;
-        }
+function sifrele(kod) {
+    let sonuc = "";
+    for (let i = 0; i < kod.length; i++) {
+        let rakam = parseInt(kod[i]);
+        let deger = rakam + islemler[i];
+        if (deger < 0) deger = -deger; // negatifse pozitif yap
+        if (deger > 9) deger = deger % 10; // 10'dan büyükse sağ rakamı al
+        sonuc += deger;
+    }
+    return sonuc;
+}
 
-        function onScanFailure(error) {
-            // Hata mesajlarını istersen buraya ekleyebilirsin
-        }
+// QR kod okuma
+function onScanSuccess(decodedText, decodedResult) {
+    // decodedText 6 haneli kod olmalı
+    if(decodedText.length === 6 && /^\d{6}$/.test(decodedText)){
+        const sifreli = sifrele(decodedText);
+        document.getElementById("sifreliKod").innerText = sifreli;
+    } else {
+        document.getElementById("sifreliKod").innerText = "Geçersiz kod!";
+    }
+}
 
-        // QR okuyucuyu başlat
-        let html5QrcodeScanner = new Html5QrcodeScanner(
-            "reader", { fps: 10, qrbox: 250 });
-        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
-    </script>
+// HTML5 QR Kod okuyucu
+var html5QrcodeScanner = new Html5QrcodeScanner(
+    "reader", { fps: 10, qrbox: 250 });
+html5QrcodeScanner.render(onScanSuccess);
+</script>
 </body>
 </html>
