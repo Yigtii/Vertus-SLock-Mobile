@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vertus OS - QR Şifre Çözücü</title>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    <title>Vertus OS - QR Kod Okuyucu</title>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -27,12 +27,10 @@
         .container {
             max-width: 500px;
             width: 100%;
-            background: rgba(44, 62, 80, 0.9);
+            background: rgba(44, 62, 80, 0.95);
             border-radius: 20px;
             padding: 30px;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
             text-align: center;
         }
         
@@ -44,57 +42,28 @@
             font-size: 32px;
             margin-bottom: 10px;
             color: #3498db;
-            text-shadow: 0 2px 10px rgba(52, 152, 219, 0.5);
         }
         
         .header p {
             font-size: 16px;
             opacity: 0.8;
-            line-height: 1.5;
         }
         
-        .camera-section {
-            margin-bottom: 30px;
-        }
-        
-        #videoContainer {
-            position: relative;
+        .qr-reader {
             width: 100%;
             max-width: 300px;
             margin: 0 auto 20px;
+            border: 3px solid #3498db;
             border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
         
-        #video {
-            width: 100%;
-            height: auto;
-            display: block;
+        #reader {
+            width: 100% !important;
         }
         
-        .scan-line {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, #3498db, transparent);
-            animation: scan 2s linear infinite;
-            box-shadow: 0 0 10px #3498db;
-        }
-        
-        @keyframes scan {
-            0% { top: 0; }
-            50% { top: 100%; }
-            100% { top: 0; }
-        }
-        
-        .camera-controls {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 15px;
+        .controls {
+            margin: 20px 0;
         }
         
         .btn {
@@ -104,9 +73,7 @@
             font-size: 16px;
             cursor: pointer;
             transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+            margin: 5px;
             font-weight: 600;
         }
         
@@ -117,30 +84,27 @@
         
         .btn-primary:hover {
             background: #2980b9;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
         }
         
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
+            background: #e74c3c;
             color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: #c0392b;
         }
         
-        .result-section {
+        .result {
             background: rgba(0, 0, 0, 0.3);
             border-radius: 15px;
             padding: 20px;
-            margin-top: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin: 20px 0;
+            border: 2px solid #2ecc71;
             display: none;
         }
         
-        .result-section.active {
+        .result.active {
             display: block;
             animation: fadeIn 0.5s ease;
         }
@@ -150,36 +114,34 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
-        .result-title {
-            font-size: 18px;
-            margin-bottom: 15px;
-            color: #3498db;
-        }
-        
         .code-display {
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
-            padding: 20px;
             margin: 15px 0;
-            border: 2px solid #3498db;
-        }
-        
-        .original-code, .encrypted-code {
-            margin: 10px 0;
-            font-size: 18px;
         }
         
         .code-value {
             font-family: 'Courier New', monospace;
-            font-size: 24px;
+            font-size: 28px;
             font-weight: bold;
-            letter-spacing: 3px;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 10px 15px;
-            border-radius: 8px;
+            letter-spacing: 4px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 10px;
             display: inline-block;
-            margin-top: 5px;
+            margin: 10px 0;
             color: #2ecc71;
+            border: 2px solid #3498db;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+        
+        .status.scanning {
+            background: rgba(52, 152, 219, 0.2);
+            color: #3498db;
         }
         
         .instructions {
@@ -192,105 +154,59 @@
             border-left: 4px solid #3498db;
         }
         
-        .instructions ol {
-            padding-left: 20px;
-            margin-top: 10px;
-        }
-        
-        .instructions li {
-            margin-bottom: 8px;
-        }
-        
-        .status {
-            margin: 15px 0;
-            padding: 10px;
-            border-radius: 8px;
-            font-weight: 500;
-        }
-        
-        .status.scanning {
-            background: rgba(52, 152, 219, 0.2);
-            color: #3498db;
-            border: 1px solid #3498db;
-        }
-        
-        .status.success {
-            background: rgba(46, 204, 113, 0.2);
-            color: #2ecc71;
-            border: 1px solid #2ecc71;
-        }
-        
         .footer {
             margin-top: 30px;
             font-size: 14px;
             opacity: 0.7;
-        }
-        
-        @media (max-width: 600px) {
-            .container {
-                padding: 20px;
-            }
-            
-            .header h1 {
-                font-size: 26px;
-            }
-            
-            #videoContainer {
-                max-width: 250px;
-            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔒 Vertus OS - QR Şifre Çözücü</h1>
-            <p>QR kodu okutun, sistem şifreli kodu otomatik olarak oluşturacaktır.</p>
+            <h1>🔒 Vertus OS - QR Kod Okuyucu</h1>
+            <p>QR kodu okutun, şifreli kod otomatik oluşturulacak</p>
         </div>
         
-        <div class="camera-section">
-            <div id="videoContainer" style="display: none;">
-                <video id="video" playsinline></video>
-                <div class="scan-line"></div>
-            </div>
-            
-            <div id="status" class="status scanning" style="display: none;">
-                📷 QR kodu tarıyor...
-            </div>
-            
-            <div class="camera-controls">
-                <button id="startCamera" class="btn btn-primary">
-                    <span>📷</span> Kamerayı Aç
-                </button>
-                <button id="stopCamera" class="btn btn-secondary" style="display: none;">
-                    <span>❌</span> Kamerayı Kapat
-                </button>
-            </div>
+        <div class="qr-reader">
+            <div id="reader"></div>
         </div>
         
-        <div id="resultSection" class="result-section">
-            <div class="result-title">✅ QR Kodu Başarıyla Okundu!</div>
+        <div id="status" class="status scanning">
+            📷 QR kodunu kameraya gösterin...
+        </div>
+        
+        <div class="controls">
+            <button id="startBtn" class="btn btn-primary">Kamerayı Başlat</button>
+            <button id="stopBtn" class="btn btn-secondary" style="display: none;">Kamerayı Durdur</button>
+        </div>
+        
+        <div id="result" class="result">
+            <h3>✅ QR Kodu Okundu!</h3>
             
             <div class="code-display">
-                <div class="original-code">
-                    <div>Orijinal Kod:</div>
-                    <div id="originalCode" class="code-value">------</div>
-                </div>
-                
-                <div class="encrypted-code">
-                    <div>Şifreli Kod (Akıllı Tahtaya Girilecek):</div>
-                    <div id="encryptedCode" class="code-value">------</div>
-                </div>
+                <div>Orijinal Kod:</div>
+                <div id="originalCode" class="code-value">------</div>
             </div>
             
-            <div class="instructions">
-                <strong>Talimatlar:</strong>
-                <ol>
-                    <li>Yukarıdaki <strong>Şifreli Kodu</strong> akıllı tahtaya girin</li>
-                    <li>Tahta otomatik olarak açılacaktır</li>
-                    <li>Yeni bir kod için kamerayı tekrar açın</li>
-                </ol>
+            <div class="code-display">
+                <div>Şifreli Kod (Tahtaya Girilecek):</div>
+                <div id="encryptedCode" class="code-value">------</div>
             </div>
+            
+            <button id="copyBtn" class="btn btn-primary" style="margin-top: 15px;">
+                📋 Şifreli Kodu Kopyala
+            </button>
+        </div>
+        
+        <div class="instructions">
+            <strong>Kullanım Talimatları:</strong>
+            <ol>
+                <li>"Kamerayı Başlat" butonuna tıklayın</li>
+                <li>Akıllı tahtadaki QR kodunu kameraya gösterin</li>
+                <li>Sistem otomatik olarak şifreli kodu oluşturacak</li>
+                <li>Oluşan şifreli kodu akıllı tahtaya girin</li>
+            </ol>
         </div>
         
         <div class="footer">
@@ -299,9 +215,8 @@
     </div>
 
     <script>
-        // QR kod şifreleme algoritması (Python'dakiyle aynı)
+        // QR kod şifreleme algoritması
         function encryptCode(originalCode) {
-            // Şifreleme deseni: [-8, +7, -5, +3, -2, +5]
             const pattern = [-8, +7, -5, +3, -2, +5];
             let encrypted = "";
             
@@ -309,168 +224,127 @@
                 let originalDigit = parseInt(originalCode[i]);
                 let encryptedDigit = originalDigit + pattern[i];
                 
-                // Negatifse pozitif yap, 9'dan büyükse küçült
-                while (encryptedDigit < 0) {
-                    encryptedDigit += 10;
-                }
-                while (encryptedDigit > 9) {
-                    encryptedDigit -= 10;
-                }
+                while (encryptedDigit < 0) encryptedDigit += 10;
+                while (encryptedDigit > 9) encryptedDigit -= 10;
                 
                 encrypted += encryptedDigit.toString();
             }
             
             return encrypted;
         }
-        
-        // DOM elementleri
-        const video = document.getElementById('video');
-        const videoContainer = document.getElementById('videoContainer');
-        const startCameraBtn = document.getElementById('startCamera');
-        const stopCameraBtn = document.getElementById('stopCamera');
+
+        // HTML5 QR Code okuyucu
+        let html5QrcodeScanner = null;
+        let isScanning = false;
+
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
         const statusDiv = document.getElementById('status');
-        const resultSection = document.getElementById('resultSection');
+        const resultDiv = document.getElementById('result');
         const originalCodeDiv = document.getElementById('originalCode');
         const encryptedCodeDiv = document.getElementById('encryptedCode');
-        
-        let stream = null;
-        let scanningInterval = null;
-        
-        // Kamerayı aç
-        startCameraBtn.addEventListener('click', async () => {
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { 
-                        facingMode: 'environment',
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    } 
+        const copyBtn = document.getElementById('copyBtn');
+
+        // Kamerayı başlat
+        startBtn.addEventListener('click', function() {
+            if (isScanning) return;
+
+            html5QrcodeScanner = new Html5QrcodeScanner(
+                "reader",
+                { 
+                    fps: 10, 
+                    qrbox: { width: 250, height: 250 },
+                    supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_QR_CODE]
+                },
+                false
+            );
+
+            html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+            isScanning = true;
+            
+            startBtn.style.display = 'none';
+            stopBtn.style.display = 'inline-block';
+            statusDiv.textContent = '🔍 QR kodu aranıyor...';
+            statusDiv.className = 'status scanning';
+            resultDiv.classList.remove('active');
+        });
+
+        // Kamerayı durdur
+        stopBtn.addEventListener('click', function() {
+            if (html5QrcodeScanner && isScanning) {
+                html5QrcodeScanner.clear().then(() => {
+                    isScanning = false;
+                    startBtn.style.display = 'inline-block';
+                    stopBtn.style.display = 'none';
+                    statusDiv.textContent = '📷 QR kodunu kameraya gösterin...';
+                }).catch(err => {
+                    console.error("Scanner stop error:", err);
                 });
-                
-                video.srcObject = stream;
-                videoContainer.style.display = 'block';
-                statusDiv.style.display = 'block';
-                startCameraBtn.style.display = 'none';
-                stopCameraBtn.style.display = 'inline-flex';
-                resultSection.classList.remove('active');
-                
-                // QR taramayı başlat
-                startQRScanning();
-                
-            } catch (err) {
-                console.error('Kamera hatası:', err);
-                alert('Kameraya erişilemedi. Lütfen kamera iznini kontrol edin.');
             }
         });
-        
-        // Kamerayı kapat
-        stopCameraBtn.addEventListener('click', () => {
-            stopQRScanning();
-        });
-        
-        // QR taramayı başlat
-        function startQRScanning() {
-            scanningInterval = setInterval(() => {
-                if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    const context = canvas.getContext('2d');
-                    
-                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    
-                    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                    const code = jsQR(imageData.data, imageData.width, imageData.height, {
-                        inversionAttempts: 'dontInvert',
-                    });
-                    
-                    if (code) {
-                        // QR kodu bulundu
-                        const qrData = code.data;
-                        
-                        // QR kodunun 6 haneli sayı olup olmadığını kontrol et
-                        if (/^\d{6}$/.test(qrData)) {
-                            processQRCode(qrData);
-                        } else {
-                            statusDiv.innerHTML = '❌ Geçersiz QR kodu. 6 haneli sayı olmalı.';
-                            statusDiv.className = 'status error';
-                        }
-                    }
+
+        // QR kod başarıyla okunduğunda
+        function onScanSuccess(decodedText, decodedResult) {
+            // Sadece 6 haneli sayıları kabul et
+            if (/^\d{6}$/.test(decodedText)) {
+                // Taramayı durdur
+                if (html5QrcodeScanner && isScanning) {
+                    html5QrcodeScanner.clear();
+                    isScanning = false;
+                    startBtn.style.display = 'inline-block';
+                    stopBtn.style.display = 'none';
                 }
-            }, 500); // Her 500ms'de bir kontrol et
-        }
-        
-        // QR taramayı durdur
-        function stopQRScanning() {
-            if (scanningInterval) {
-                clearInterval(scanningInterval);
-                scanningInterval = null;
-            }
-            
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
-            }
-            
-            videoContainer.style.display = 'none';
-            statusDiv.style.display = 'none';
-            startCameraBtn.style.display = 'inline-flex';
-            stopCameraBtn.style.display = 'none';
-        }
-        
-        // QR kodu işle
-        function processQRCode(qrData) {
-            // QR taramayı durdur
-            stopQRScanning();
-            
-            // Orijinal kodu göster
-            originalCodeDiv.textContent = qrData;
-            
-            // Şifreli kodu oluştur ve göster
-            const encryptedCode = encryptCode(qrData);
-            encryptedCodeDiv.textContent = encryptedCode;
-            
-            // Sonuçları göster
-            resultSection.classList.add('active');
-            
-            // Durum mesajını güncelle
-            statusDiv.innerHTML = '✅ QR kodu başarıyla okundu!';
-            statusDiv.className = 'status success';
-            
-            // Şifreli kodu panoya kopyala butonu ekle (isteğe bağlı)
-            addCopyButton();
-        }
-        
-        // Kopyalama butonu ekle (isteğe bağlı)
-        function addCopyButton() {
-            // Eğer zaten bir kopyalama butonu yoksa ekle
-            if (!document.getElementById('copyButton')) {
-                const copyButton = document.createElement('button');
-                copyButton.id = 'copyButton';
-                copyButton.className = 'btn btn-primary';
-                copyButton.innerHTML = '📋 Şifreli Kodu Kopyala';
-                copyButton.style.marginTop = '10px';
+
+                // Kodları işle
+                const originalCode = decodedText;
+                const encryptedCode = encryptCode(originalCode);
+
+                // Sonuçları göster
+                originalCodeDiv.textContent = originalCode;
+                encryptedCodeDiv.textContent = encryptedCode;
+                resultDiv.classList.add('active');
                 
-                copyButton.addEventListener('click', () => {
-                    navigator.clipboard.writeText(encryptedCodeDiv.textContent)
-                        .then(() => {
-                            copyButton.innerHTML = '✅ Kopyalandı!';
-                            setTimeout(() => {
-                                copyButton.innerHTML = '📋 Şifreli Kodu Kopyala';
-                            }, 2000);
-                        })
-                        .catch(err => {
-                            console.error('Kopyalama hatası:', err);
-                        });
-                });
-                
-                document.querySelector('.code-display').appendChild(copyButton);
+                statusDiv.textContent = '✅ QR kodu başarıyla okundu!';
+                statusDiv.style.background = 'rgba(46, 204, 113, 0.2)';
+                statusDiv.style.color = '#2ecc71';
+
+                console.log("Orijinal Kod:", originalCode);
+                console.log("Şifreli Kod:", encryptedCode);
+            } else {
+                statusDiv.textContent = '❌ Geçersiz QR kodu. 6 haneli sayı olmalı.';
+                statusDiv.style.background = 'rgba(231, 76, 60, 0.2)';
+                statusDiv.style.color = '#e74c3c';
             }
         }
-        
-        // Sayfa kapatılırken kamera erişimini serbest bırak
-        window.addEventListener('beforeunload', () => {
-            stopQRScanning();
+
+        // QR kod okuma hatası
+        function onScanFailure(error) {
+            // Hata mesajlarını göstermeyebiliriz, sessizce devam edelim
+        }
+
+        // Kopyalama butonu
+        copyBtn.addEventListener('click', function() {
+            const encryptedCode = encryptedCodeDiv.textContent;
+            
+            navigator.clipboard.writeText(encryptedCode).then(() => {
+                copyBtn.innerHTML = '✅ Kopyalandı!';
+                copyBtn.style.background = '#2ecc71';
+                
+                setTimeout(() => {
+                    copyBtn.innerHTML = '📋 Şifreli Kodu Kopyala';
+                    copyBtn.style.background = '#3498db';
+                }, 2000);
+            }).catch(err => {
+                console.error('Kopyalama hatası:', err);
+                alert('Kopyalama başarısız. Lütfen manuel kopyalayın.');
+            });
+        });
+
+        // Sayfa kapatılırken scanner'ı temizle
+        window.addEventListener('beforeunload', function() {
+            if (html5QrcodeScanner && isScanning) {
+                html5QrcodeScanner.clear();
+            }
         });
     </script>
 </body>
