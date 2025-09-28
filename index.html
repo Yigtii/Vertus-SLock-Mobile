@@ -288,9 +288,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 
     <script>
-        // Python kodundaki şifreleme algoritmasının JavaScript karşılığı
+        // Python kodundaki EXACT şifreleme algoritmasının JavaScript karşılığı
         function encryptCode(code) {
-            const codeSum = code.split('').reduce((sum, digit) => sum + parseInt(digit), 0);
+            // Python: code_sum = sum(int(digit) for digit in code)
+            let codeSum = 0;
+            for (let i = 0; i < code.length; i++) {
+                codeSum += parseInt(code[i]);
+            }
+            
+            // Python: secret_key = code_sum % 9 + 1
             const secretKey = (codeSum % 9) + 1;
             
             const multipliers = [3, 7, 2, 5, 8, 4];
@@ -301,16 +307,17 @@
             for (let i = 0; i < 6; i++) {
                 const originalDigit = parseInt(code[i]);
                 
-                // 1. Pozisyon bazlı çarpma
+                // Python algoritmasını birebir takip et
+                // step1 = (original_digit * multipliers[i]) % 10
                 const step1 = (originalDigit * multipliers[i]) % 10;
                 
-                // 2. Anahtar ile toplama
+                // step2 = (step1 + secret_key) % 10
                 const step2 = (step1 + secretKey) % 10;
                 
-                // 3. Pozisyon bazlı ekleme
+                // step3 = (step2 + adders[i]) % 10
                 const step3 = (step2 + adders[i]) % 10;
                 
-                // 4. Çift pozisyonlarda ters çevirme
+                // Python'daki koşul: if i % 2 == 0:
                 let finalDigit;
                 if (i % 2 === 0) {
                     finalDigit = (9 - step3) % 10;
@@ -328,7 +335,7 @@
             const multipliers = [3, 7, 2, 5, 8, 4];
             const adders = [4, 1, 9, 6, 2, 7];
             
-            // Tüm olası anahtar değerlerini dene (1-9 arası)
+            // Python kodundaki decrypt algoritmasını birebir uygula
             for (let secretKey = 1; secretKey <= 9; secretKey++) {
                 let decrypted = "";
                 let validDecryption = true;
@@ -336,7 +343,7 @@
                 for (let i = 0; i < 6; i++) {
                     const encryptedDigit = parseInt(inputCode[i]);
                     
-                    // 4. Çift pozisyonlarda ters çevirmeyi geri al
+                    // Python: if i % 2 == 0: step3 = (9 - encrypted_digit) % 10
                     let step3;
                     if (i % 2 === 0) {
                         step3 = (9 - encryptedDigit) % 10;
@@ -344,13 +351,13 @@
                         step3 = encryptedDigit;
                     }
                     
-                    // 3. Pozisyon bazlı eklemeyi geri al
-                    const step2 = (step3 - adders[i] + 10) % 10;
+                    // Python: step2 = (step3 - adders[i] + 10) % 10
+                    let step2 = (step3 - adders[i] + 10) % 10;
                     
-                    // 2. Anahtar ile toplamayı geri al
-                    const step1 = (step2 - secretKey + 10) % 10;
+                    // Python: step1 = (step2 - secret_key + 10) % 10
+                    let step1 = (step2 - secretKey + 10) % 10;
                     
-                    // 1. Pozisyon bazlı çarpmayı geri al (modular inverse)
+                    // Python modular inverse mantığı
                     let originalDigit = null;
                     for (let testDigit = 0; testDigit < 10; testDigit++) {
                         if ((testDigit * multipliers[i]) % 10 === step1) {
@@ -367,9 +374,13 @@
                     decrypted += originalDigit.toString();
                 }
                 
-                // Çözülen kodun toplamı anahtar ile uyumlu mu kontrol et
+                // Python: code_sum = sum(int(d) for d in decrypted)
+                // Python: if code_sum % 9 + 1 == secret_key:
                 if (validDecryption && decrypted.length === 6) {
-                    const codeSum = decrypted.split('').reduce((sum, digit) => sum + parseInt(digit), 0);
+                    let codeSum = 0;
+                    for (let i = 0; i < decrypted.length; i++) {
+                        codeSum += parseInt(decrypted[i]);
+                    }
                     if ((codeSum % 9) + 1 === secretKey) {
                         return decrypted;
                     }
@@ -379,16 +390,39 @@
             return null;
         }
 
-        // Test fonksiyonu - şifreleme doğru mu kontrol et
+        // Test fonksiyonu - Python kodunuzla birebir uyumlu mu test et
         function testEncryption() {
-            const testCode = "123456";
-            const encrypted = encryptCode(testCode);
-            const decrypted = decryptCode(encrypted);
+            console.log("=== ŞİFRELEME TESTİ ===");
             
-            document.getElementById('debug').innerHTML = `
-                Test: ${testCode} -> ${encrypted} -> ${decrypted} 
-                ${testCode === decrypted ? '✓ BAŞARILI' : '✗ HATALI'}
-            `;
+            // Birkaç farklı kod test et
+            const testCodes = ["123456", "987654", "555555", "123123"];
+            
+            for (let testCode of testCodes) {
+                console.log(`\nTest Kodu: ${testCode}`);
+                
+                // Şifrele
+                const encrypted = encryptCode(testCode);
+                console.log(`Şifreli: ${encrypted}`);
+                
+                // Şifreyi çöz
+                const decrypted = decryptCode(encrypted);
+                console.log(`Çözülmüş: ${decrypted}`);
+                
+                // Test sonucu
+                const success = testCode === decrypted;
+                console.log(`Sonuç: ${success ? 'BAŞARILI ✓' : 'HATALI ✗'}`);
+                
+                if (success) {
+                    document.getElementById('debug').innerHTML += `
+                        Test: ${testCode} -> ${encrypted} -> ${decrypted} ✓<br>
+                    `;
+                } else {
+                    document.getElementById('debug').innerHTML += `
+                        HATA: ${testCode} -> ${encrypted} -> ${decrypted} ✗<br>
+                    `;
+                }
+            }
+            
             document.getElementById('debug').classList.remove('hidden');
         }
 
