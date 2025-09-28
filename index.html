@@ -1,47 +1,475 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<title>QR ile Şifreleme</title>
-<script src="https://unpkg.com/html5-qrcode"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vertus Smart Lock - QR Açıcı</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            font-size: 2.2em;
+            font-weight: 300;
+            color: #fff;
+        }
+
+        .subtitle {
+            margin-bottom: 30px;
+            font-size: 1.1em;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .qr-section {
+            margin-bottom: 30px;
+        }
+
+        #qr-reader {
+            width: 100%;
+            max-width: 350px;
+            margin: 0 auto;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .status.success {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(34, 197, 94, 0.5);
+            color: #22c55e;
+        }
+
+        .status.error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            color: #ef4444;
+        }
+
+        .status.info {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.5);
+            color: #3b82f6;
+        }
+
+        .result-section {
+            margin-top: 25px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .code-display {
+            font-family: 'Courier New', monospace;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #4ade80;
+            letter-spacing: 3px;
+            margin: 15px 0;
+            text-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+        }
+
+        .manual-input {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .manual-input h3 {
+            margin-bottom: 15px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        input[type="text"] {
+            padding: 10px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            width: 200px;
+        }
+
+        input[type="text"]::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            button {
+                width: 100%;
+                max-width: 250px;
+            }
+        }
+    </style>
 </head>
 <body>
-<h1>QR Kod ile Şifreleme</h1>
+    <div class="container">
+        <h1>🔓 Smart Lock QR</h1>
+        <p class="subtitle">QR kodunu okutarak tahtayı açın</p>
 
-<div id="reader" style="width:300px;"></div>
-<p>Şifreli Kod: <span id="sifreliKod">Bekleniyor...</span></p>
+        <div class="qr-section">
+            <div id="qr-reader"></div>
+        </div>
 
-<script>
-// Şifreleme algoritması
-const islemler = [-8, 7, -5, 3, -2, 5];
+        <div class="buttons">
+            <button id="start-btn">📷 Kamerayı Başlat</button>
+            <button id="stop-btn" disabled>⏹️ Durdur</button>
+        </div>
 
-function sifrele(kod) {
-    let sonuc = "";
-    for (let i = 0; i < kod.length; i++) {
-        let rakam = parseInt(kod[i]);
-        let deger = rakam + islemler[i];
-        if (deger < 0) deger = -deger; // negatifse pozitif yap
-        if (deger > 9) deger = deger % 10; // 10'dan büyükse sağ rakamı al
-        sonuc += deger;
-    }
-    return sonuc;
-}
+        <div class="manual-input">
+            <h3>Manuel Kod Girişi</h3>
+            <div class="input-group">
+                <input type="text" id="manual-code" placeholder="6 haneli şifreli kod" maxlength="6">
+                <button id="decode-btn">🔓 Çöz</button>
+            </div>
+        </div>
 
-// QR kod okuma
-function onScanSuccess(decodedText, decodedResult) {
-    // decodedText 6 haneli kod olmalı
-    if(decodedText.length === 6 && /^\d{6}$/.test(decodedText)){
-        const sifreli = sifrele(decodedText);
-        document.getElementById("sifreliKod").innerText = sifreli;
-    } else {
-        document.getElementById("sifreliKod").innerText = "Geçersiz kod!";
-    }
-}
+        <div id="status" class="status hidden"></div>
 
-// HTML5 QR Kod okuyucu
-var html5QrcodeScanner = new Html5QrcodeScanner(
-    "reader", { fps: 10, qrbox: 250 });
-html5QrcodeScanner.render(onScanSuccess);
-</script>
+        <div id="result" class="result-section hidden">
+            <h3>✅ Kod Çözüldü!</h3>
+            <div class="code-display" id="decoded-result"></div>
+            <p>Bu kodu tahta kilit ekranına girin</p>
+        </div>
+
+        <div class="footer">
+            <p>Vertus™ Smart Lock v0.3.0 - Yiğit Eritici</p>
+        </div>
+    </div>
+
+    <!-- QR Code Scanner Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+
+    <script>
+        // Şifreleme fonksiyonları
+        function encryptCode(code) {
+            let codeSum = 0;
+            for (let i = 0; i < code.length; i++) {
+                codeSum += parseInt(code[i]);
+            }
+            const secretKey = (codeSum % 9) + 1;
+            
+            const multipliers = [3, 7, 2, 5, 8, 4];
+            const adders = [4, 1, 9, 6, 2, 7];
+            
+            let encrypted = "";
+            
+            for (let i = 0; i < 6; i++) {
+                const originalDigit = parseInt(code[i]);
+                
+                const step1 = (originalDigit * multipliers[i]) % 10;
+                const step2 = (step1 + secretKey) % 10;
+                const step3 = (step2 + adders[i]) % 10;
+                
+                let finalDigit;
+                if (i % 2 === 0) {
+                    finalDigit = (9 - step3) % 10;
+                } else {
+                    finalDigit = step3;
+                }
+                
+                encrypted += finalDigit.toString();
+            }
+            
+            return encrypted;
+        }
+
+        function decryptCode(inputCode) {
+            const multipliers = [3, 7, 2, 5, 8, 4];
+            const adders = [4, 1, 9, 6, 2, 7];
+            
+            for (let secretKey = 1; secretKey <= 9; secretKey++) {
+                let decrypted = "";
+                let validDecryption = true;
+                
+                for (let i = 0; i < 6; i++) {
+                    const encryptedDigit = parseInt(inputCode[i]);
+                    
+                    let step3;
+                    if (i % 2 === 0) {
+                        step3 = (9 - encryptedDigit) % 10;
+                    } else {
+                        step3 = encryptedDigit;
+                    }
+                    
+                    step3 = (step3 - adders[i] + 10) % 10;
+                    const step2 = (step3 - secretKey + 10) % 10;
+                    
+                    let originalDigit = null;
+                    for (let testDigit = 0; testDigit < 10; testDigit++) {
+                        if ((testDigit * multipliers[i]) % 10 === step2) {
+                            originalDigit = testDigit;
+                            break;
+                        }
+                    }
+                    
+                    if (originalDigit === null) {
+                        validDecryption = false;
+                        break;
+                    }
+                    
+                    decrypted += originalDigit.toString();
+                }
+                
+                if (validDecryption && decrypted.length === 6) {
+                    let codeSum = 0;
+                    for (let i = 0; i < decrypted.length; i++) {
+                        codeSum += parseInt(decrypted[i]);
+                    }
+                    if ((codeSum % 9) + 1 === secretKey) {
+                        return decrypted;
+                    }
+                }
+            }
+            
+            return null;
+        }
+
+        // QR Scanner setup
+        let html5QrCode = null;
+        let isScanning = false;
+
+        const startBtn = document.getElementById('start-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const statusDiv = document.getElementById('status');
+        const resultDiv = document.getElementById('result');
+        const decodedResult = document.getElementById('decoded-result');
+        const manualCode = document.getElementById('manual-code');
+        const decodeBtn = document.getElementById('decode-btn');
+
+        function showStatus(message, type = 'info') {
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.classList.remove('hidden');
+        }
+
+        function hideStatus() {
+            statusDiv.classList.add('hidden');
+        }
+
+        function showResult(code) {
+            decodedResult.textContent = code;
+            resultDiv.classList.remove('hidden');
+            
+            // 5 saniye sonra sonucu gizle
+            setTimeout(() => {
+                resultDiv.classList.add('hidden');
+            }, 10000);
+        }
+
+        function processQRCode(encryptedCode) {
+            // 6 haneli kod mu kontrol et
+            if (!/^\d{6}$/.test(encryptedCode)) {
+                showStatus('Geçersiz QR kod formatı! 6 haneli sayı olmalı.', 'error');
+                return;
+            }
+
+            const decrypted = decryptCode(encryptedCode);
+            
+            if (decrypted) {
+                showStatus('✅ Kod başarıyla çözüldü!', 'success');
+                showResult(decrypted);
+                
+                // Ses çıkar
+                try {
+                    const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBjqX2O6+dSIGKIze98xsDA==');
+                    audio.play();
+                } catch (e) {
+                    console.log('Ses çalınamadı:', e);
+                }
+            } else {
+                showStatus('❌ Kod çözülemedi! Geçersiz şifreli kod.', 'error');
+            }
+        }
+
+        // QR Scanner events
+        function onScanSuccess(decodedText, decodedResult) {
+            console.log('QR Kod okundu:', decodedText);
+            processQRCode(decodedText);
+        }
+
+        function onScanFailure(error) {
+            // Sessizce hatayı yoksay (sürekli hata mesajı vermemek için)
+        }
+
+        startBtn.addEventListener('click', async () => {
+            try {
+                if (!html5QrCode) {
+                    html5QrCode = new Html5Qrcode("qr-reader");
+                }
+
+                const cameras = await Html5Qrcode.getCameras();
+                if (cameras && cameras.length) {
+                    const cameraId = cameras[0].id; // İlk kamerayı kullan
+                    
+                    await html5QrCode.start(
+                        cameraId,
+                        {
+                            fps: 10,
+                            qrbox: { width: 250, height: 250 }
+                        },
+                        onScanSuccess,
+                        onScanFailure
+                    );
+
+                    isScanning = true;
+                    startBtn.disabled = true;
+                    stopBtn.disabled = false;
+                    showStatus('📷 Kamera aktif, QR kodunu kameraya gösterin...', 'info');
+                } else {
+                    showStatus('❌ Kamera bulunamadı!', 'error');
+                }
+            } catch (err) {
+                console.error('Kamera başlatma hatası:', err);
+                showStatus('❌ Kamera erişimi reddedildi veya hata oluştu!', 'error');
+            }
+        });
+
+        stopBtn.addEventListener('click', async () => {
+            if (html5QrCode && isScanning) {
+                try {
+                    await html5QrCode.stop();
+                    isScanning = false;
+                    startBtn.disabled = false;
+                    stopBtn.disabled = true;
+                    hideStatus();
+                } catch (err) {
+                    console.error('Kamera durdurma hatası:', err);
+                }
+            }
+        });
+
+        // Manuel kod girişi
+        decodeBtn.addEventListener('click', () => {
+            const code = manualCode.value.trim();
+            if (code) {
+                processQRCode(code);
+                manualCode.value = '';
+            } else {
+                showStatus('⚠️ Lütfen 6 haneli şifreli kodu girin!', 'error');
+            }
+        });
+
+        // Enter tuşu ile manuel çözme
+        manualCode.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                decodeBtn.click();
+            }
+        });
+
+        // Sayfa yüklendiğinde
+        window.addEventListener('load', () => {
+            showStatus('📱 Kamerayı başlatmak için butona tıklayın', 'info');
+        });
+
+        // Sayfa kapanırken kamerayı durdur
+        window.addEventListener('beforeunload', () => {
+            if (html5QrCode && isScanning) {
+                html5QrCode.stop();
+            }
+        });
+    </script>
 </body>
 </html>
