@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>🔓 Vertus Kilidi Aç</title>
+    <title>🔓 Vertus Kod Deşifre</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body { 
@@ -23,23 +23,51 @@
             max-width: 400px;
             margin: 0 auto;
         }
+        .input-section, .output-section {
+            margin: 20px 0;
+        }
+        input {
+            font-size: 24px;
+            padding: 15px;
+            width: 200px;
+            text-align: center;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-family: 'Courier New', monospace;
+        }
+        input::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+        button {
+            background: #2ecc71;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background: #27ae60;
+        }
         .code { 
             font-size: 48px; 
             font-weight: bold; 
-            color: #fff; 
+            color: #2ecc71; 
             margin: 20px 0;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
             letter-spacing: 5px;
             font-family: 'Courier New', monospace;
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
         }
         .info {
             font-size: 14px;
             opacity: 0.8;
-            margin: 10px 0;
-        }
-        .timer {
-            font-size: 16px;
-            color: #ffeb3b;
             margin: 10px 0;
         }
         .warning {
@@ -55,109 +83,161 @@
             margin: 10px 0;
             font-size: 12px;
         }
+        .auto-section {
+            margin: 20px 0;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🔓 Vertus Kilidi Aç</h1>
+        <h1>🔓 Vertus Kod Deşifre</h1>
+        
         <div class="warning">
-            ⚠️ DİKKAT: Ekrandaki kodu DEĞİL, aşağıdaki kodu girin!
+            ⚠️ Ekrandaki kodu aşağıya gir, GERÇEK kodu al!
         </div>
-        
-        <div class="code" id="realCode">YÜKLENİYOR...</div>
-        <div class="timer" id="timer"></div>
-        
-        <div class="info">Bu kodu akıllı tahtaya girin</div>
-        <div class="info">Ekrandaki kodu girmeyin!</div>
-        <div class="info">Kod her 30 saniyede bir değişir</div>
-        
+
+        <!-- MANUEL GİRİŞ -->
+        <div class="input-section">
+            <h3>📝 Manuel Deşifre</h3>
+            <input type="text" id="displayCode" placeholder="124021" maxlength="6" 
+                   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            <br>
+            <button onclick="decryptManual()">🔓 Kodu Deşifre Et</button>
+        </div>
+
+        <!-- OTOMATİK KOD -->
+        <div class="auto-section">
+            <h3>🔄 Otomatik Kod</h3>
+            <div class="code" id="autoRealCode">--- ---</div>
+            <div class="timer" id="timer"></div>
+            <button onclick="copyAutoCode()">📋 Otomatik Kodu Kopyala</button>
+        </div>
+
+        <!-- ÇIKTI -->
+        <div class="output-section">
+            <h3>✅ Gerçek Kod</h3>
+            <div class="code" id="realCode">--- ---</div>
+            <button onclick="copyManualCode()">📋 Gerçek Kodu Kopyala</button>
+        </div>
+
         <div class="example">
-            <strong>Örnek:</strong><br>
-            Ekranda: <span style="color:#ff6b6b">124021</span> → Telefonda: <span style="color:#2ecc71">985978</span><br>
-            <em>Ekrandakini girme, aşağıdakini gir!</em>
+            <strong>Örnekler:</strong><br>
+            • 124021 → <span style="color:#2ecc71">985978</span><br>
+            • 567890 → <span style="color:#2ecc71">432109</span><br>
+            • 111111 → <span style="color:#2ecc71">999999</span><br>
+            • 000000 → <span style="color:#2ecc71">000000</span>
+        </div>
+
+        <div class="info">
+            Ekrandaki 6 haneli kodu gir, gerçek kodu al ve akıllı tahtaya gir!
         </div>
     </div>
 
     <script>
-        function generateRealCode() {
+        // Python'daki get_real_code fonksiyonunun birebir aynısı
+        function getRealCode(displayCode) {
+            let realCode = "";
+            for (let i = 0; i < displayCode.length; i++) {
+                const char = displayCode[i];
+                if (char >= '0' && char <= '9') {
+                    const digit = parseInt(char);
+                    const realDigit = (10 - digit) % 10;
+                    realCode += realDigit.toString();
+                } else {
+                    realCode += char;
+                }
+            }
+            return realCode;
+        }
+
+        // Manuel deşifre işlemi
+        function decryptManual() {
+            const displayCode = document.getElementById('displayCode').value;
+            
+            if (displayCode.length !== 6) {
+                alert('Lütfen 6 haneli kod girin!');
+                return;
+            }
+
+            const realCode = getRealCode(displayCode);
+            document.getElementById('realCode').textContent = realCode;
+            
+            // Debug
+            console.log(`Girilen: ${displayCode} → Gerçek: ${realCode}`);
+        }
+
+        // Otomatik kod üretimi (mevcut sistemle uyumlu)
+        function generateAutoCode() {
             const time = Math.floor(Date.now() / 30000);
             const secret = "vertus_okul_2024";
             const rawCode = secret + time;
 
-            // Python'daki MD5 hash mantığını taklit et
-            function pythonMD5Hash(input) {
-                // Basit bir hash fonksiyonu - Python'daki gibi davranması için
-                let hash = 0;
-                for (let i = 0; i < input.length; i++) {
-                    const char = input.charCodeAt(i);
-                    hash = ((hash << 5) - hash) + char;
-                    hash = hash & hash; // 32-bit integer
-                }
-                return Math.abs(hash).toString(16).padStart(32, '0');
-            }
-
             // Python'daki get_display_code mantığını taklit et
             function getDisplayCode() {
-                const hash = pythonMD5Hash(rawCode);
-                
-                // Hash'ten sayısal karakterleri al
-                let numericHash = "";
-                for (let i = 0; i < hash.length; i++) {
-                    const char = hash[i];
-                    if (char >= '0' && char <= '9') {
-                        numericHash += char;
-                    }
+                // Basit hash fonksiyonu
+                let hash = 0;
+                for (let i = 0; i < rawCode.length; i++) {
+                    hash = ((hash << 5) - hash) + rawCode.charCodeAt(i);
+                    hash |= 0;
                 }
 
-                // İlk 6 haneyi al
-                let displayCode = numericHash.substring(0, 6);
+                let numericCode = '';
+                let hashStr = Math.abs(hash).toString();
                 
-                // Eğer yeterli yoksa tamamla
-                if (displayCode.length < 6) {
-                    const remaining = 6 - displayCode.length;
-                    for (let i = 0; i < remaining; i++) {
-                        displayCode += (time % 10).toString();
-                    }
+                for (let i = 0; i < hashStr.length && numericCode.length < 6; i++) {
+                    numericCode += hashStr[i];
                 }
-                
-                return displayCode;
-            }
 
-            // Python'daki get_real_code mantığını taklit et
-            function getRealCode(displayCode) {
-                let realCode = "";
-                for (let i = 0; i < displayCode.length; i++) {
-                    const digit = parseInt(displayCode[i]);
-                    const realDigit = (10 - digit) % 10;
-                    realCode += realDigit.toString();
+                while (numericCode.length < 6) {
+                    numericCode += Math.floor(Math.random() * 10);
                 }
-                return realCode;
+
+                return numericCode.substr(0, 6);
             }
 
             const displayCode = getDisplayCode();
             const realCode = getRealCode(displayCode);
             
-            document.getElementById('realCode').textContent = realCode;
+            document.getElementById('autoRealCode').textContent = realCode;
 
             // Geri sayım
             const secondsLeft = 30 - (Math.floor(Date.now() / 1000) % 30);
             document.getElementById('timer').textContent = 
                 `Kod ${secondsLeft} saniye sonra değişecek`;
-
-            // Debug için (konsolda görmek için)
-            console.log(`Zaman: ${time}, Görünen: ${displayCode}, Gerçek: ${realCode}`);
         }
 
-        // Sayfa yüklendiğinde ve her saniye çalıştır
-        generateRealCode();
-        setInterval(generateRealCode, 1000);
+        // Kopyalama fonksiyonları
+        function copyManualCode() {
+            const code = document.getElementById('realCode').textContent;
+            if (code !== '--- ---') {
+                navigator.clipboard.writeText(code).then(() => {
+                    alert('Gerçek kod panoya kopyalandı: ' + code);
+                });
+            }
+        }
 
-        // Sayfa görünür olduğunda da güncelle
-        document.addEventListener('visibilitychange', function() {
-            if (!document.hidden) {
-                generateRealCode();
+        function copyAutoCode() {
+            const code = document.getElementById('autoRealCode').textContent;
+            if (code !== '--- ---') {
+                navigator.clipboard.writeText(code).then(() => {
+                    alert('Otomatik kod panoya kopyalandı: ' + code);
+                });
+            }
+        }
+
+        // Enter tuşu ile deşifre
+        document.getElementById('displayCode').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                decryptManual();
             }
         });
+
+        // Sayfa yüklendiğinde otomatik kodu başlat
+        generateAutoCode();
+        setInterval(generateAutoCode, 1000);
+
+        // Input'a odaklan
+        document.getElementById('displayCode').focus();
     </script>
 </body>
 </html>
