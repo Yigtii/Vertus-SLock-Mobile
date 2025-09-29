@@ -1,356 +1,228 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html>
 <head>
-    <meta charset="UTF-8">
+    <title>🔓 Vertus HMAC Converter</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vertus Smart Lock - QR Açıcı</title>
+    <meta charset="UTF-8">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             min-height: 100vh;
             display: flex;
-            align-items: center;
+            flex-direction: column;
             justify-content: center;
-            color: white;
+            margin: 0;
         }
-
         .container {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(15px);
-            border-radius: 20px;
+            background: rgba(255,255,255,0.1);
             padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
             max-width: 400px;
-            width: 90%;
-            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            text-align: center;
-        }
-
-        h1 {
-            margin-bottom: 10px;
-            font-size: 1.8em;
-            font-weight: 300;
-        }
-
-        .subtitle {
-            margin-bottom: 20px;
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .qr-section {
-            margin-bottom: 20px;
-        }
-
-        #qr-reader {
-            width: 100%;
-            max-width: 300px;
             margin: 0 auto;
-            border-radius: 15px;
-            overflow: hidden;
-            background: #000;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
         }
-
-        .controls {
-            margin: 15px 0;
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
-
-        button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        button:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .status {
-            margin: 15px 0;
-            padding: 10px;
-            border-radius: 10px;
-            font-weight: 500;
-        }
-
-        .status.success {
-            background: rgba(46, 204, 113, 0.3);
-            border: 1px solid rgba(46, 204, 113, 0.6);
-        }
-
-        .status.error {
-            background: rgba(231, 76, 60, 0.3);
-            border: 1px solid rgba(231, 76, 60, 0.6);
-        }
-
-        .result {
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .code {
+        .code { 
+            font-size: 48px; 
+            font-weight: bold; 
+            color: #fff; 
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            letter-spacing: 5px;
             font-family: 'Courier New', monospace;
-            font-size: 1.8em;
-            font-weight: bold;
-            color: #2ecc71;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 10px;
+        }
+        .info {
+            font-size: 14px;
+            opacity: 0.8;
             margin: 10px 0;
-            text-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
         }
-
-        .manual {
-            margin-top: 20px;
+        .timer {
+            font-size: 16px;
+            color: #ffeb3b;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .converter {
+            margin: 20px 0;
             padding: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
         }
-
-        .input-group {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 10px;
-        }
-
-        input {
-            padding: 8px 12px;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
+        .converter input {
+            width: 80%;
+            padding: 10px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
             text-align: center;
-            width: 150px;
+            font-size: 16px;
         }
-
-        input::placeholder {
-            color: rgba(255, 255, 255, 0.7);
+        .converter button {
+            background: #2ecc71;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
         }
-
-        .footer {
-            margin-top: 20px;
-            font-size: 0.8em;
-            color: rgba(255, 255, 255, 0.6);
+        .converter button:hover {
+            background: #27ae60;
         }
-
-        .hidden {
-            display: none;
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 18px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Vertus Smart Lock</h1>
-        <p class="subtitle">QR kodunu okutarak tahtayı açın</p>
-
-        <div class="qr-section">
-            <div id="qr-reader"></div>
-            <div class="controls">
-                <button id="start-btn">Kamerayı Başlat</button>
-                <button id="stop-btn" disabled>Durdur</button>
-            </div>
-        </div>
-
-        <div class="manual">
-            <p>Manuel Kod Girişi</p>
-            <div class="input-group">
-                <input type="text" id="manual-code" placeholder="Şifreli kod" maxlength="6">
-                <button id="decode-btn">Çöz</button>
-            </div>
-        </div>
-
-        <div id="status" class="status hidden"></div>
-
-        <div id="result" class="result hidden">
-            <p>Çözülen Kod:</p>
-            <div class="code" id="decoded-result"></div>
-            <p>Bu kodu tahtaya girin</p>
-        </div>
-
-        <div class="footer">
-            <p>Vertus Smart Lock v1.0</p>
+        <h1>🔓 Vertus HMAC Converter</h1>
+        <div class="code" id="code">YÜKLENİYOR...</div>
+        <div class="timer" id="timer"></div>
+        <div class="info">Bu 6 haneli kodu akıllı tahtaya girin</div>
+        <div class="info">Kod her 30 saniyede bir değişir</div>
+        
+        <div class="converter">
+            <div class="info">🔢 HMAC DECODER</div>
+            <input type="text" id="displayCode" placeholder="Ekrandaki 6 haneli kodu girin" maxlength="6">
+            <button onclick="decodeCode()">Şifreyi Çöz</button>
+            <div class="result" id="convertedResult"></div>
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-
     <script>
-        // SHA256 HMAC şifreleme (Python ile uyumlu)
-        function encryptCode(code, secretKey = "vertus2024") {
-            // HMAC SHA256 ile hash oluştur
-            const hmac = CryptoJS.HmacSHA256(code, secretKey);
-            const hashHex = hmac.toString(CryptoJS.enc.Hex);
+        // HMAC Decoder Fonksiyonu
+        function decodeCode() {
+            const displayCode = document.getElementById('displayCode').value;
             
-            // Hash'ten 6 haneli sayı üret
-            let numbers = [];
-            for (let i = 0; i < hashHex.length; i += 4) {
-                const chunk = hashHex.substr(i, 4);
-                const num = parseInt(chunk, 16) % 10;
-                numbers.push(num.toString());
-                if (numbers.length === 6) break;
-            }
-            
-            return numbers.join('');
-        }
-
-        function verifyCode(inputCode, encryptedCode, secretKey = "vertus2024") {
-            const testEncrypted = encryptCode(inputCode, secretKey);
-            return testEncrypted === encryptedCode;
-        }
-
-        // QR Scanner
-        let html5QrCode = null;
-        let isScanning = false;
-
-        const startBtn = document.getElementById('start-btn');
-        const stopBtn = document.getElementById('stop-btn');
-        const statusDiv = document.getElementById('status');
-        const resultDiv = document.getElementById('result');
-        const decodedResult = document.getElementById('decoded-result');
-        const manualCode = document.getElementById('manual-code');
-        const decodeBtn = document.getElementById('decode-btn');
-
-        function showStatus(message, type = '') {
-            statusDiv.textContent = message;
-            statusDiv.className = `status ${type}`;
-            statusDiv.classList.remove('hidden');
-        }
-
-        function showResult(code) {
-            decodedResult.textContent = code;
-            resultDiv.classList.remove('hidden');
-        }
-
-        function processEncryptedCode(encryptedCode) {
-            console.log('Şifreli kod:', encryptedCode);
-            
-            if (!/^\d{6}$/.test(encryptedCode)) {
-                showStatus('Geçersiz kod formatı!', 'error');
+            // Giriş kontrolü
+            if (displayCode.length !== 6 || !/^\d+$/.test(displayCode)) {
+                document.getElementById('convertedResult').textContent = "❌ Lütfen 6 haneli rakam girin!";
+                document.getElementById('convertedResult').style.background = "rgba(231, 76, 60, 0.3)";
                 return;
             }
 
-            // Tüm olası kodları dene (000000-999999)
-            let foundCode = null;
-            for (let i = 0; i <= 999999; i++) {
-                const testCode = i.toString().padStart(6, '0');
-                if (verifyCode(testCode, encryptedCode)) {
-                    foundCode = testCode;
-                    break;
-                }
-            }
-
-            if (foundCode) {
-                showStatus('Kod çözüldü!', 'success');
-                showResult(foundCode);
-                
-                // Ses efekti
-                try {
-                    const beep = new Audio("data:audio/wav;base64,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qJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU=");
-                    beep.play();
-                } catch (e) {
-                    console.log('Ses çalınamadı');
-                }
-            } else {
-                showStatus('Kod çözülemedi!', 'error');
-            }
+            // HMAC şifreleme anahtarı (Python ile aynı)
+            const secret = "vertus_okul_2024_guvenlik_anahtari";
+            
+            // HMAC ile şifre çözme
+            const decodedCode = hmacDecode(secret, displayCode);
+            
+            // Sonucu göster
+            document.getElementById('convertedResult').textContent = `🔓 Çözülmüş Kod: ${decodedCode}`;
+            document.getElementById('convertedResult').style.background = "rgba(46, 204, 113, 0.3)";
         }
 
-        // QR Scanner events
-        function onScanSuccess(decodedText) {
-            processEncryptedCode(decodedText.trim());
-        }
-
-        function onScanFailure(error) {
-            // Hata mesajını gösterme
-        }
-
-        // Kamera başlatma
-        startBtn.addEventListener('click', async () => {
-            try {
-                if (!html5QrCode) {
-                    html5QrCode = new Html5Qrcode("qr-reader");
+        function hmacDecode(secret, code) {
+            // HMAC benzeri hash fonksiyonu
+            let hash = 0;
+            const combined = secret + code;
+            
+            for (let i = 0; i < combined.length; i++) {
+                const char = combined.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // 32-bit integer
+            }
+            
+            // Hash'i pozitif yap ve hexadecimal'e çevir
+            const positiveHash = Math.abs(hash);
+            let hexHash = positiveHash.toString(16).padStart(8, '0');
+            
+            // Hexadecimal'den 6 haneli rakam kodu üret
+            let numericCode = "";
+            for (let char of hexHash) {
+                if (char >= '0' && char <= '9') {
+                    numericCode += char;
                 }
-
-                const config = {
-                    fps: 10,
-                    qrbox: { width: 250, height: 250 }
-                };
-
-                await html5QrCode.start(
-                    { facingMode: "environment" },
-                    config,
-                    onScanSuccess,
-                    onScanFailure
-                );
-
-                isScanning = true;
-                startBtn.disabled = true;
-                stopBtn.disabled = false;
-                showStatus('Kamera aktif, QR kodunu gösterin...');
-
-            } catch (err) {
-                showStatus('Kamera hatası: ' + err.message, 'error');
+                if (numericCode.length === 6) break;
             }
-        });
-
-        // Kamerayı durdurma
-        stopBtn.addEventListener('click', async () => {
-            if (html5QrCode && isScanning) {
-                await html5QrCode.stop();
-                isScanning = false;
-                startBtn.disabled = false;
-                stopBtn.disabled = true;
-                showStatus('Kamera durduruldu');
+            
+            // Eğer yeterli rakam yoksa, harfleri rakama çevir
+            while (numericCode.length < 6) {
+                for (let char of hexHash) {
+                    if ((char >= 'a' && char <= 'f') || (char >= 'A' && char <= 'F')) {
+                        numericCode += (char.charCodeAt(0) % 10).toString();
+                    }
+                    if (numericCode.length === 6) break;
+                }
             }
-        });
+            
+            return numericCode;
+        }
 
-        // Manuel kod girişi
-        decodeBtn.addEventListener('click', () => {
-            const code = manualCode.value.trim();
-            if (code.length === 6) {
-                processEncryptedCode(code);
-                manualCode.value = '';
-            } else {
-                showStatus('6 haneli kod girin!', 'error');
+        // Zaman bazlı kod üretimi (Python ile uyumlu)
+        function generateTimeBasedCode() {
+            const time = Math.floor(Date.now() / 30000); // 30 saniyelik periyot
+            const secret = "vertus_okul_2024_guvenlik_anahtari";
+            
+            let hash = 0;
+            const combined = secret + time;
+            
+            for (let i = 0; i < combined.length; i++) {
+                const char = combined.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
             }
-        });
+            
+            const positiveHash = Math.abs(hash);
+            let hexHash = positiveHash.toString(16).padStart(8, '0');
+            
+            let numericCode = "";
+            for (let char of hexHash) {
+                if (char >= '0' && char <= '9') {
+                    numericCode += char;
+                }
+                if (numericCode.length === 6) break;
+            }
+            
+            while (numericCode.length < 6) {
+                for (let char of hexHash) {
+                    if ((char >= 'a' && char <= 'f') || (char >= 'A' && char <= 'F')) {
+                        numericCode += (char.charCodeAt(0) % 10).toString();
+                    }
+                    if (numericCode.length === 6) break;
+                }
+            }
+            
+            return numericCode;
+        }
 
-        // Enter tuşu
-        manualCode.addEventListener('keypress', (e) => {
+        function updateDisplay() {
+            const code = generateTimeBasedCode();
+            document.getElementById('code').textContent = code;
+
+            // Geri sayım
+            const secondsLeft = 30 - (Math.floor(Date.now() / 1000) % 30);
+            document.getElementById('timer').textContent = 
+                `Kod ${secondsLeft} saniye sonra değişecek`;
+        }
+
+        // Sayfa yüklendiğinde ve her saniye güncelle
+        updateDisplay();
+        setInterval(updateDisplay, 1000);
+
+        // Input alanında enter tuşu desteği
+        document.getElementById('displayCode').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                decodeBtn.click();
+                decodeCode();
             }
         });
 
-        // Sadece rakam
-        manualCode.addEventListener('input', (e) => {
-            e.target.value = e.target.value.replace(/[^0-9]/g, '');
-        });
-
-        // Sayfa yüklendiğinde
-        window.addEventListener('load', () => {
-            showStatus('Kamerayı başlatmak için butona tıklayın');
+        // Input'a sadece rakam girişi kısıtlaması
+        document.getElementById('displayCode').addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);
         });
     </script>
 </body>
