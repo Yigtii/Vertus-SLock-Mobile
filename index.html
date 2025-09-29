@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>🔓 Vertus HMAC Converter</title>
+    <title>🔓 Vertus Kilidi Aç</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta charset="UTF-8">
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -15,7 +14,6 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            margin: 0;
         }
         .container {
             background: rgba(255,255,255,0.1);
@@ -24,7 +22,6 @@
             backdrop-filter: blur(10px);
             max-width: 400px;
             margin: 0 auto;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
         }
         .code { 
             font-size: 48px; 
@@ -34,9 +31,6 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
             letter-spacing: 5px;
             font-family: 'Courier New', monospace;
-            background: rgba(255,255,255,0.2);
-            border-radius: 10px;
-            padding: 10px;
         }
         .info {
             font-size: 14px;
@@ -47,182 +41,122 @@
             font-size: 16px;
             color: #ffeb3b;
             margin: 10px 0;
-            font-weight: bold;
         }
-        .converter {
-            margin: 20px 0;
-            padding: 15px;
-            background: rgba(255,255,255,0.1);
+        .warning {
+            background: rgba(255,0,0,0.3);
+            padding: 10px;
             border-radius: 10px;
+            margin: 15px 0;
         }
-        .converter input {
-            width: 80%;
+        .example {
+            background: rgba(255,255,255,0.2);
             padding: 10px;
-            margin: 5px;
-            border: none;
-            border-radius: 5px;
-            text-align: center;
-            font-size: 16px;
-        }
-        .converter button {
-            background: #2ecc71;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 5px;
-            font-size: 14px;
-        }
-        .converter button:hover {
-            background: #27ae60;
-        }
-        .result {
-            margin-top: 10px;
-            padding: 10px;
-            border-radius: 5px;
-            font-weight: bold;
-            font-size: 18px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 12px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🔓 Vertus HMAC Converter</h1>
-        <div class="code" id="code">YÜKLENİYOR...</div>
+        <h1>🔓 Vertus Kilidi Aç</h1>
+        <div class="warning">
+            ⚠️ DİKKAT: Ekrandaki kodu DEĞİL, aşağıdaki kodu girin!
+        </div>
+        
+        <div class="code" id="realCode">YÜKLENİYOR...</div>
         <div class="timer" id="timer"></div>
-        <div class="info">Bu 6 haneli kodu akıllı tahtaya girin</div>
+        
+        <div class="info">Bu kodu akıllı tahtaya girin</div>
+        <div class="info">Ekrandaki kodu girmeyin!</div>
         <div class="info">Kod her 30 saniyede bir değişir</div>
         
-        <div class="converter">
-            <div class="info">🔢 HMAC DECODER</div>
-            <input type="text" id="displayCode" placeholder="Ekrandaki 6 haneli kodu girin" maxlength="6">
-            <button onclick="decodeCode()">Şifreyi Çöz</button>
-            <div class="result" id="convertedResult"></div>
+        <div class="example">
+            <strong>Örnek:</strong><br>
+            Ekranda: <span style="color:#ff6b6b">124021</span> → Telefonda: <span style="color:#2ecc71">985978</span><br>
+            <em>Ekrandakini girme, aşağıdakini gir!</em>
         </div>
     </div>
 
     <script>
-        // HMAC Decoder Fonksiyonu
-        function decodeCode() {
-            const displayCode = document.getElementById('displayCode').value;
-            
-            // Giriş kontrolü
-            if (displayCode.length !== 6 || !/^\d+$/.test(displayCode)) {
-                document.getElementById('convertedResult').textContent = "❌ Lütfen 6 haneli rakam girin!";
-                document.getElementById('convertedResult').style.background = "rgba(231, 76, 60, 0.3)";
-                return;
-            }
+        function generateRealCode() {
+            const time = Math.floor(Date.now() / 30000);
+            const secret = "vertus_okul_2024";
+            const rawCode = secret + time;
 
-            // HMAC şifreleme anahtarı (Python ile aynı)
-            const secret = "vertus_okul_2024_guvenlik_anahtari";
-            
-            // HMAC ile şifre çözme
-            const decodedCode = hmacDecode(secret, displayCode);
-            
-            // Sonucu göster
-            document.getElementById('convertedResult').textContent = `🔓 Çözülmüş Kod: ${decodedCode}`;
-            document.getElementById('convertedResult').style.background = "rgba(46, 204, 113, 0.3)";
-        }
-
-        function hmacDecode(secret, code) {
-            // HMAC benzeri hash fonksiyonu
-            let hash = 0;
-            const combined = secret + code;
-            
-            for (let i = 0; i < combined.length; i++) {
-                const char = combined.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash = hash & hash; // 32-bit integer
-            }
-            
-            // Hash'i pozitif yap ve hexadecimal'e çevir
-            const positiveHash = Math.abs(hash);
-            let hexHash = positiveHash.toString(16).padStart(8, '0');
-            
-            // Hexadecimal'den 6 haneli rakam kodu üret
-            let numericCode = "";
-            for (let char of hexHash) {
-                if (char >= '0' && char <= '9') {
-                    numericCode += char;
+            // Python'daki MD5 hash mantığını taklit et
+            function pythonMD5Hash(input) {
+                // Basit bir hash fonksiyonu - Python'daki gibi davranması için
+                let hash = 0;
+                for (let i = 0; i < input.length; i++) {
+                    const char = input.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash = hash & hash; // 32-bit integer
                 }
-                if (numericCode.length === 6) break;
+                return Math.abs(hash).toString(16).padStart(32, '0');
             }
-            
-            // Eğer yeterli rakam yoksa, harfleri rakama çevir
-            while (numericCode.length < 6) {
-                for (let char of hexHash) {
-                    if ((char >= 'a' && char <= 'f') || (char >= 'A' && char <= 'F')) {
-                        numericCode += (char.charCodeAt(0) % 10).toString();
+
+            // Python'daki get_display_code mantığını taklit et
+            function getDisplayCode() {
+                const hash = pythonMD5Hash(rawCode);
+                
+                // Hash'ten sayısal karakterleri al
+                let numericHash = "";
+                for (let i = 0; i < hash.length; i++) {
+                    const char = hash[i];
+                    if (char >= '0' && char <= '9') {
+                        numericHash += char;
                     }
-                    if (numericCode.length === 6) break;
                 }
-            }
-            
-            return numericCode;
-        }
 
-        // Zaman bazlı kod üretimi (Python ile uyumlu)
-        function generateTimeBasedCode() {
-            const time = Math.floor(Date.now() / 30000); // 30 saniyelik periyot
-            const secret = "vertus_okul_2024_guvenlik_anahtari";
-            
-            let hash = 0;
-            const combined = secret + time;
-            
-            for (let i = 0; i < combined.length; i++) {
-                const char = combined.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash = hash & hash;
-            }
-            
-            const positiveHash = Math.abs(hash);
-            let hexHash = positiveHash.toString(16).padStart(8, '0');
-            
-            let numericCode = "";
-            for (let char of hexHash) {
-                if (char >= '0' && char <= '9') {
-                    numericCode += char;
-                }
-                if (numericCode.length === 6) break;
-            }
-            
-            while (numericCode.length < 6) {
-                for (let char of hexHash) {
-                    if ((char >= 'a' && char <= 'f') || (char >= 'A' && char <= 'F')) {
-                        numericCode += (char.charCodeAt(0) % 10).toString();
+                // İlk 6 haneyi al
+                let displayCode = numericHash.substring(0, 6);
+                
+                // Eğer yeterli yoksa tamamla
+                if (displayCode.length < 6) {
+                    const remaining = 6 - displayCode.length;
+                    for (let i = 0; i < remaining; i++) {
+                        displayCode += (time % 10).toString();
                     }
-                    if (numericCode.length === 6) break;
                 }
+                
+                return displayCode;
             }
-            
-            return numericCode;
-        }
 
-        function updateDisplay() {
-            const code = generateTimeBasedCode();
-            document.getElementById('code').textContent = code;
+            // Python'daki get_real_code mantığını taklit et
+            function getRealCode(displayCode) {
+                let realCode = "";
+                for (let i = 0; i < displayCode.length; i++) {
+                    const digit = parseInt(displayCode[i]);
+                    const realDigit = (10 - digit) % 10;
+                    realCode += realDigit.toString();
+                }
+                return realCode;
+            }
+
+            const displayCode = getDisplayCode();
+            const realCode = getRealCode(displayCode);
+            
+            document.getElementById('realCode').textContent = realCode;
 
             // Geri sayım
             const secondsLeft = 30 - (Math.floor(Date.now() / 1000) % 30);
             document.getElementById('timer').textContent = 
                 `Kod ${secondsLeft} saniye sonra değişecek`;
+
+            // Debug için (konsolda görmek için)
+            console.log(`Zaman: ${time}, Görünen: ${displayCode}, Gerçek: ${realCode}`);
         }
 
-        // Sayfa yüklendiğinde ve her saniye güncelle
-        updateDisplay();
-        setInterval(updateDisplay, 1000);
+        // Sayfa yüklendiğinde ve her saniye çalıştır
+        generateRealCode();
+        setInterval(generateRealCode, 1000);
 
-        // Input alanında enter tuşu desteği
-        document.getElementById('displayCode').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                decodeCode();
+        // Sayfa görünür olduğunda da güncelle
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                generateRealCode();
             }
-        });
-
-        // Input'a sadece rakam girişi kısıtlaması
-        document.getElementById('displayCode').addEventListener('input', function(e) {
-            this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);
         });
     </script>
 </body>
